@@ -1,49 +1,79 @@
 
 import streamlit as st
+import pandas as pd
 from database import obtener_conexion
 
-st.title("Registro de clientes")
+st.title("Gestión de Clientes")
+
+conn = obtener_conexion()
+
+st.subheader("Registrar cliente")
 
 nombre = st.text_input("Nombre")
 apellido = st.text_input("Apellido")
 telefono = st.text_input("Teléfono")
+direccion = st.text_input("Dirección")
 correo = st.text_input("Correo")
 
-if st.button("Guardar cliente"):
-
-    conexion = obtener_conexion()
-
-    if conexion:
-        cursor = conexion.cursor()
-
-        sql = """
+if st.button("Registrar cliente"):
+    if nombre and apellido:
+        cursor = conn.cursor()
+        cursor.execute("""
             INSERT INTO Clientes
-            (Nombre, Apellido, Telefono, Correo)
-            VALUES (%s, %s, %s, %s)
-        """
-
-        cursor.execute(
-            sql,
-            (nombre, apellido, telefono, correo)
-        )
-
-        conexion.commit()
+            (Nombre, Apellido, Telefono, Direccion, Correo)
+            VALUES (%s, %s, %s, %s, %s)
+        """, (nombre, apellido, telefono, direccion, correo))
+        conn.commit()
         cursor.close()
-        conexion.close()
-
-        st.success("Cliente registrado correctamente")
+        st.success("Cliente registrado")
+        st.rerun()
     else:
-        st.error("Error de conexión")
+        st.warning("Ingresa nombre y apellido")
 
-st.subheader("Clientes registrados")
+st.subheader("Consultar clientes")
+clientes = pd.read_sql("SELECT * FROM Clientes", conn)
+st.dataframe(clientes, use_container_width=True)
 
-conexion = obtener_conexion()
+st.subheader("Actualizar cliente")
 
-if conexion:
-    cursor = conexion.cursor()
-    cursor.execute("SELECT * FROM Clientes")
+if not clientes.empty:
+    id_cliente = st.selectbox("ID del cliente", clientes["ID_Cliente"])
+    fila = clientes[clientes["ID_Cliente"] == id_cliente].iloc[0]
 
-    st.dataframe(cursor.fetchall())
+    nuevo_nombre = st.text_input("Nuevo nombre", str(fila["Nombre"]))
+    nuevo_apellido = st.text_input("Nuevo apellido", str(fila["Apellido"]))
+    nuevo_telefono = st.text_input("Nuevo teléfono", str(fila["Telefono"] or ""))
+    nueva_direccion = st.text_input("Nueva dirección", str(fila["Direccion"] or ""))
+    nuevo_correo = st.text_input("Nuevo correo", str(fila["Correo"] or ""))
 
-    cursor.close()
-    conexion.close()
+    if st.button("Actualizar cliente"):
+        cursor = conn.cursor()
+        cursor.execute("""
+            UPDATE Clientes
+            SET Nombre=%s, Apellido=%s, Telefono=%s,
+                Direccion=%s, Correo=%s
+            WHERE ID_Cliente=%s
+        """, (nuevo_nombre, nuevo_apellido, nuevo_telefono,
+              nueva_direccion, nuevo_correo, int(id_cliente)))
+        conn.commit()
+        cursor.close()
+        st.success("Cliente actualizado")
+        st.rerun()
+
+    st.subheader("Eliminar cliente")
+    if st.button("Eliminar cliente"):
+        cursor = conn.cursor()
+        try:
+            cursor.execute(
+                "DELETE FROM Clientes WHERE ID_Cliente=%s",
+                (int(id_cliente),)
+            )
+            conn.commit()
+            st.success("Cliente eliminado")
+            st.rerun()
+        except Exception:
+            conn.rollback()
+            st.error("No se puede eliminar: puede tener pedidos relacionados")
+        cursor.close()
+
+conn.close()
