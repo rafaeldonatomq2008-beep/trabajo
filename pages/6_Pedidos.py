@@ -28,11 +28,10 @@ platos = pd.read_sql(
 
 if not mesas.empty and not empleados.empty and not platos.empty:
     mesa = st.selectbox(
-        "Mesa", mesas["ID_Mesa"],
-        format_func=lambda x: mesas.loc[
-            mesas["ID_Mesa"] == x, "Numero_Mesa"
-        ].iloc[0]
-    )
+    "Mesa",
+    options=mesas["ID_Mesa"].tolist(),
+    format_func=lambda x: f"Mesa {x}"
+)
 
     empleado = st.selectbox(
         "Empleado", empleados["ID_Empleado"],
