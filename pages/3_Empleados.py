@@ -1,6 +1,11 @@
 
+# Streamlit permite crear la interfaz gráfica del sistema
 import streamlit as st
+
+# Pandas permite mostrar los datos en tablas
 import pandas as pd
+
+# Permite establecer la conexión con MySQL
 from database import obtener_conexion
 
 st.title("Gestión de Empleados")
@@ -8,6 +13,7 @@ st.title("Gestión de Empleados")
 conn = obtener_conexion()
 cargos = ["Mesero", "Cajero", "Administrador", "Cocinero", "Recepcionista"]
 
+# Registrar nuevos empleados en la base de datos
 st.subheader("Registrar empleado")
 nombre = st.text_input("Nombre")
 apellido = st.text_input("Apellido")
@@ -28,11 +34,14 @@ if st.button("Registrar empleado"):
     else:
         st.warning("Ingresa nombre y apellido")
 
+# Consultar y mostrar los empleados registrados
 st.subheader("Consultar empleados")
 empleados = pd.read_sql("SELECT * FROM Empleados", conn)
 st.dataframe(empleados, use_container_width=True)
 
 if not empleados.empty:
+
+    # Actualizar los datos de un empleado existente
     st.subheader("Actualizar empleado")
     id_empleado = st.selectbox("ID del empleado", empleados["ID_Empleado"])
     fila = empleados[empleados["ID_Empleado"] == id_empleado].iloc[0]
@@ -59,6 +68,7 @@ if not empleados.empty:
         st.success("Empleado actualizado")
         st.rerun()
 
+    # Eliminar un empleado mediante su ID
     st.subheader("Eliminar empleado")
     if st.button("Eliminar empleado"):
         cursor = conn.cursor()
@@ -75,4 +85,5 @@ if not empleados.empty:
             st.error("No se puede eliminar: puede tener pedidos relacionados")
         cursor.close()
 
+# Cerrar la conexión con la base de datos
 conn.close()

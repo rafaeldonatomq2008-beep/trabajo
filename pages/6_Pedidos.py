@@ -1,12 +1,18 @@
 
+# Streamlit permite crear la interfaz gráfica del sistema
 import streamlit as st
+
+# Pandas permite mostrar los datos en tablas
 import pandas as pd
+
+# Permite establecer la conexión con MySQL
 from database import obtener_conexion
 
 st.title("Gestión de Pedidos y Comandas")
 
 conn = obtener_conexion()
 
+# Registrar pedidos seleccionando mesa, empleado, cliente y plato
 st.subheader("Registrar pedido")
 
 mesas = pd.read_sql(
@@ -97,6 +103,7 @@ if not mesas.empty and not empleados.empty and not platos.empty:
 else:
     st.warning("Necesitas mesas disponibles, empleados activos y platos disponibles")
 
+# Consultar los pedidos registrados y calcular sus totales
 st.subheader("Consultar pedidos")
 
 pedidos = pd.read_sql("""
@@ -111,6 +118,7 @@ pedidos = pd.read_sql("""
 
 st.dataframe(pedidos, use_container_width=True)
 
+# Mostrar las comandas pendientes y en preparación
 st.subheader("Comandas pendientes")
 
 comandas = pd.read_sql("""
@@ -125,6 +133,7 @@ comandas = pd.read_sql("""
 
 st.dataframe(comandas, use_container_width=True)
 
+# Actualizar el estado de un pedido existente
 st.subheader("Actualizar estado")
 
 if not pedidos.empty:
@@ -144,4 +153,5 @@ if not pedidos.empty:
         st.success("Pedido actualizado")
         st.rerun()
 
+# Cerrar la conexión con la base de datos
 conn.close()

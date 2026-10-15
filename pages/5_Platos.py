@@ -1,6 +1,11 @@
 
+# Streamlit permite crear la interfaz gráfica del sistema
 import streamlit as st
+
+# Pandas permite mostrar los datos en tablas
 import pandas as pd
+
+# Permite establecer la conexión con MySQL
 from database import obtener_conexion
 
 st.title("Gestión de Platos")
@@ -11,6 +16,7 @@ categorias = pd.read_sql(
     "SELECT * FROM Categorias", conn
 )
 
+# Registrar nuevos platos en la base de datos
 st.subheader("Registrar plato")
 
 if not categorias.empty:
@@ -45,6 +51,7 @@ if not categorias.empty:
 else:
     st.warning("Primero registra una categoría")
 
+# Consultar y mostrar los platos con sus categorías
 st.subheader("Consultar platos")
 
 platos = pd.read_sql("""
@@ -57,6 +64,8 @@ platos = pd.read_sql("""
 st.dataframe(platos, use_container_width=True)
 
 if not platos.empty:
+
+    # Actualizar los datos de un plato existente
     st.subheader("Actualizar plato")
     id_plato = st.selectbox("ID del plato", platos["ID_Plato"])
     fila = platos[platos["ID_Plato"] == id_plato].iloc[0]
@@ -84,6 +93,7 @@ if not platos.empty:
         st.success("Plato actualizado")
         st.rerun()
 
+    # Eliminar un plato mediante su ID
     st.subheader("Eliminar plato")
     if st.button("Eliminar plato"):
         cursor = conn.cursor()
@@ -101,4 +111,5 @@ if not platos.empty:
         finally:
             cursor.close()
 
+# Cerrar la conexión con la base de datos
 conn.close()

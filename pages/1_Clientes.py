@@ -1,12 +1,18 @@
 
+# Streamlit permite crear la interfaz gráfica del sistema
 import streamlit as st
+
+# Pandas permite mostrar los datos en tablas
 import pandas as pd
+
+# Permite establecer la conexión con MySQL
 from database import obtener_conexion
 
 st.title("Gestión de Clientes")
 
 conn = obtener_conexion()
 
+# Registrar nuevos clientes en la base de datos
 st.subheader("Registrar cliente")
 
 nombre = st.text_input("Nombre")
@@ -30,10 +36,15 @@ if st.button("Registrar cliente"):
     else:
         st.warning("Ingresa nombre y apellido")
 
+
+# Consultar y mostrar los clientes registrados
 st.subheader("Consultar clientes")
+
 clientes = pd.read_sql("SELECT * FROM Clientes", conn)
 st.dataframe(clientes, use_container_width=True)
 
+
+# Actualizar los datos de un cliente existente
 st.subheader("Actualizar cliente")
 
 if not clientes.empty:
@@ -60,7 +71,9 @@ if not clientes.empty:
         st.success("Cliente actualizado")
         st.rerun()
 
+    # Eliminar un cliente mediante su ID
     st.subheader("Eliminar cliente")
+
     if st.button("Eliminar cliente"):
         cursor = conn.cursor()
         try:
@@ -76,4 +89,5 @@ if not clientes.empty:
             st.error("No se puede eliminar: puede tener pedidos relacionados")
         cursor.close()
 
+# Cerrar la conexión con la base de datos
 conn.close()

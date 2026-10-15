@@ -1,12 +1,18 @@
 
+# Streamlit permite crear la interfaz gráfica del sistema
 import streamlit as st
+
+# Pandas permite mostrar los datos en tablas
 import pandas as pd
+
+# Permite establecer la conexión con MySQL
 from database import obtener_conexion
 
 st.title("Consultas y Reportes de Ventas")
 
 conn = obtener_conexion()
 
+# Consultar los ingresos diarios, semanales y mensuales
 st.subheader("Ingresos por periodo")
 
 periodo = st.selectbox(
@@ -32,6 +38,7 @@ ventas = pd.read_sql(f"""
 
 st.dataframe(ventas, use_container_width=True)
 
+# Consultar los platos más vendidos del restaurante
 st.subheader("Platos más vendidos")
 
 platos = pd.read_sql("""
@@ -46,6 +53,7 @@ platos = pd.read_sql("""
 
 st.dataframe(platos, use_container_width=True)
 
+# Consultar los ingresos según el método de pago
 st.subheader("Ingresos por método de pago")
 
 metodos = pd.read_sql("""
@@ -56,7 +64,9 @@ metodos = pd.read_sql("""
 
 st.dataframe(metodos, use_container_width=True)
 
+# Mostrar los ingresos mediante un gráfico de barras
 if not metodos.empty:
     st.bar_chart(metodos.set_index("Metodo_Pago")["Ingresos"])
 
+# Cerrar la conexión con la base de datos
 conn.close()
